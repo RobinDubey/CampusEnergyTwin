@@ -1,0 +1,723 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Energy Schedule | Campus Twin</title>
+<link rel="stylesheet"
+ href="{{ url_for('static', filename='style.css') }}">
+<style>
+:root {
+  --navy: #101a3a;
+  --blue: #4361ee;
+  --purple: #7957ed;
+  --muted: #71809d;
+  --line: #e7ebf5;
+  --bg: #f4f6fc;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #182443;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+}
+.main-nav {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 15px;
+  background: #101a3a;
+}
+.main-nav a {
+  color: #dce6ff;
+  text-decoration: none;
+  padding: 11px 17px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: .2s;
+}
+.main-nav a:hover, .main-nav a.active {
+  color: white;
+  background: #344b91;
+}
+.hero {
+  padding: 36px clamp(20px, 5vw, 65px);
+  color: white;
+  background: linear-gradient(120deg, #14234e, #3458c9 62%, #7552d9);
+  position: relative;
+  overflow: hidden;
+}
+.hero:after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: 7%;
+  top: -120px;
+  border: 40px solid #ffffff12;
+  border-radius: 50%;
+}
+.eyebrow {
+  color: #b9ccff;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 43px);
+  margin: 12px 0;
+  letter-spacing: -1px;
+}
+.hero p { color: #e0e7ff; line-height: 1.7; }
+.hero-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.demo-tag {
+  background: #ffffff18;
+  border: 1px solid #ffffff30;
+  padding: 10px 14px;
+  border-radius: 30px;
+  font-size: 12px;
+}
+.page {
+  max-width: 1450px;
+  margin: auto;
+  padding: 28px clamp(16px, 4vw, 48px) 50px;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.section-heading h2 { margin: 0; font-size: 22px; }
+.muted { color: var(--muted); font-size: 13px; }
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px;
+  margin-bottom: 28px;
+}
+.stat {
+  background: white;
+  border: 1px solid #e6eafa;
+  border-radius: 17px;
+  padding: 22px;
+  box-shadow: 0 7px 25px #1d326008;
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 30px #243b8014;
+}
+.stat:before {
+  content: "";
+  height: 4px;
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  background: var(--accent);
+}
+.stat-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.stat-icon {
+  display: grid;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  border-radius: 13px;
+  background: var(--tint);
+  color: var(--accent);
+  font-size: 22px;
+}
+.stat-label { color: #687792; font-size: 13px; }
+.stat-value {
+  font-size: clamp(24px, 2.5vw, 31px);
+  font-weight: 800;
+  margin: 20px 0 8px;
+  letter-spacing: -.6px;
+  overflow-wrap: anywhere;
+}
+.stat-note { color: #8290a8; font-size: 12px; }
+.panel {
+  background: white;
+  border: 1px solid #e5eafa;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 7px 25px #1d326008;
+}
+.toolbar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 22px 0;
+}
+.search-box {
+  flex: 1;
+  min-width: 210px;
+  position: relative;
+}
+.search-box span {
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  color: #8090ad;
+  font-size: 18px;
+}
+.toolbar input, .toolbar select {
+  width: 100%;
+  min-height: 45px;
+  padding: 12px 14px;
+  border: 1px solid #dfe5f1;
+  border-radius: 11px;
+  background: #fbfcff;
+  color: #182443;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+}
+.search-box input { padding-left: 43px; }
+.toolbar input:focus, .toolbar select:focus {
+  border-color: #6380f5;
+  box-shadow: 0 0 0 3px #4361ee18;
+}
+.filter-box { width: 190px; }
+.btn {
+  min-height: 45px;
+  border: 0;
+  border-radius: 11px;
+  padding: 12px 17px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: .2s;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn-primary {
+  color: white;
+  background: linear-gradient(110deg, #4361ee, #7957ed);
+  box-shadow: 0 5px 13px #4361ee25;
+}
+.btn-light { background: #edf1ff; color: #3452c4; }
+.table-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.table-top h3 { margin: 0; font-size: 17px; }
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+table { width: 100%; min-width: 780px; border-collapse: collapse; }
+thead { background: #f4f6fd; }
+th {
+  color: #687792;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .7px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+th, td {
+  padding: 17px 16px;
+  text-align: left;
+  border-bottom: 1px solid #edf0f7;
+}
+td { font-size: 13px; }
+tbody tr { transition: background .15s; }
+tbody tr:hover { background: #f7f9ff; }
+tbody tr:last-child td { border-bottom: 0; }
+.task-name { font-weight: 700; color: #202e50; }
+.task-sub { color: #8b97ad; font-size: 11px; margin-top: 5px; }
+.time-pill {
+  display: inline-block;
+  padding: 6px 9px;
+  background: #edf2ff;
+  color: #3e5ed1;
+  border-radius: 7px;
+  font-weight: 700;
+  font-size: 12px;
+}
+.energy-value { font-weight: 700; }
+.emission {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 11px;
+  white-space: nowrap;
+}
+.emission.low { background: #dcfce7; color: #167346; }
+.emission.medium { background: #fff1cf; color: #9a6200; }
+.emission.high { background: #ffe4e6; color: #be123c; }
+.empty {
+  padding: 35px !important;
+  text-align: center;
+  color: #7c8aa5;
+}
+.summary-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: 17px;
+  background: #f5f7ff;
+  border-radius: 12px;
+  font-size: 13px;
+}
+.summary-footer strong { color: #3658d5; }
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #7a88a2;
+  font-size: 12px;
+}
+@media(max-width: 900px) {
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media(max-width: 520px) {
+  .stats { grid-template-columns: 1fr; }
+  .panel { padding: 15px; }
+  .filter-box { width: 100%; }
+  .toolbar .btn { flex: 1; }
+}
+/* Active navigation button */
+.main-nav a.active {
+    background: #4361ee;
+    color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.25);
+}
+
+/* Hover effect */
+.main-nav a:hover {
+    background: #4361ee;
+    color: #ffffff;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+/* Put navigation inside the gradient hero */
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 35px;
+    padding: 35px 3.3%;
+    min-height: 190px;
+    box-sizing: border-box;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.hero-content {
+    flex: 1 1 420px;
+    min-width: 0;
+}
+
+.hero-content h1 {
+    font-size: clamp(32px, 3vw, 46px);
+    margin: 20px 0;
+}
+
+.hero-content p {
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1.7;
+}
+
+/* Navigation box */
+.hero .main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    gap: 8px;
+    flex: 0 1 805px;
+    margin: 0;
+    padding: 12px;
+    box-sizing: border-box;
+    border-radius: 20px;
+    background: linear-gradient(110deg, #111c44, #304fc7);
+    border: 1px solid rgba(255,255,255,0.25);
+    box-shadow: 0 10px 25px rgba(10,20,60,0.18);
+transform: translate(-60px, 60px);}
+
+.hero .main-nav a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 14px 16px;
+    border-radius: 12px;
+    white-space: nowrap;
+    transition: 0.25s ease;
+}
+
+.hero .main-nav a:hover,
+.hero .main-nav a.active {
+    background: #4361ee;
+    color: #ffffff;
+    box-shadow: 0 5px 15px rgba(67,97,238,0.3);
+}
+
+@media (max-width: 1000px) {
+    .hero {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .hero .main-nav {
+        flex: 1 1 auto;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    .hero .main-nav a {
+        padding: 11px;
+    }
+}
+.main-nav {
+    position: relative;
+    z-index: 1000;
+}
+
+.main-nav a {
+    position: relative;
+    z-index: 1001;
+    pointer-events: auto;
+    cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+
+<header class="hero">
+  <div class="hero-content">
+    <div class="eyebrow">SMART CAMPUS MANAGEMENT / OPERATIONS</div>
+
+    <h1>Energy Schedule <span>⚡</span></h1>
+
+    <p>Monitor energy demand, review scheduled activities and explore carbon emissions.</p>
+  </div>
+
+  <nav class="main-nav">
+    <a href="/">Dashboard</a>
+    <a href="/buildings">Buildings</a>
+    <a href="/analytics">Analytics</a>
+    <a href="/schedule" class="active">Energy Schedule</a>
+    <a href="/alerts">Alerts Center</a>
+  </nav>
+</header>
+<main class="page">
+  <div class="section-heading">
+    <div>
+      <h2>Today's Overview</h2>
+      <p class="muted">A quick snapshot of your scheduled energy activities.</p>
+    </div>
+    <button class="btn btn-light" id="refreshBtn">↻ Refresh Data</button>
+  </div>
+
+  <section class="stats">
+    <article class="stat" style="--accent:#4361ee;--tint:#eaf0ff">
+      <div class="stat-top">
+        <span class="stat-label">Scheduled Activities</span>
+        <span class="stat-icon">▦</span>
+      </div>
+      <div class="stat-value" id="taskCount">—</div>
+      <div class="stat-note">Activities in the schedule</div>
+    </article>
+
+    <article class="stat" style="--accent:#08916b;--tint:#dcfce7">
+      <div class="stat-top">
+        <span class="stat-label">Total Energy</span>
+        <span class="stat-icon">⚡</span>
+      </div>
+      <div class="stat-value" id="energyTotal">—</div>
+      <div class="stat-note">Combined scheduled kWh</div>
+    </article>
+
+    <article class="stat" style="--accent:#7957ed;--tint:#ede9fe">
+      <div class="stat-top">
+        <span class="stat-label">Estimated Emissions</span>
+        <span class="stat-icon">♧</span>
+      </div>
+      <div class="stat-value" id="emissionTotal">—</div>
+      <div class="stat-note">Estimated kg CO₂e</div>
+    </article>
+
+    <article class="stat" style="--accent:#e58a16;--tint:#fff1d6">
+      <div class="stat-top">
+        <span class="stat-label">High-Emission Tasks</span>
+        <span class="stat-icon">↗</span>
+      </div>
+      <div class="stat-value" id="highCount">—</div>
+      <div class="stat-note">Tasks above 15 kg CO₂e</div>
+    </article>
+  </section>
+
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Activity Planner</h2>
+        <p class="muted">Search activities, filter emissions and export the results.</p>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search-box">
+        <span>⌕</span>
+        <input id="searchTask" type="search"
+          placeholder="Search task or time..." aria-label="Search tasks">
+      </div>
+      <div class="filter-box">
+        <select id="emissionFilter" aria-label="Filter by emissions">
+          <option value="all">All emission levels</option>
+          <option value="low">Low: up to 10 kg</option>
+          <option value="medium">Medium: over 10–15 kg</option>
+          <option value="high">High: over 15 kg</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="exportCsv">↓ Export CSV</button>
+      <button class="btn btn-light" id="resetBtn">Reset</button>
+    </div>
+
+    <div class="table-top">
+      <h3>Scheduled Activities</h3>
+      <span class="muted" id="resultCount">Loading activities...</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Activity</th>
+            <th>Scheduled Time</th>
+            <th>Energy Usage</th>
+            <th>Carbon Intensity</th>
+            <th>Estimated Emissions</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleRows">
+          <tr><td colspan="5" class="empty">Loading schedule...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="summary-footer">
+      <span>Filtered energy: <strong id="filteredEnergy">0 kWh</strong></span>
+      <span>Filtered emissions: <strong id="filteredEmissions">0 kg CO₂e</strong></span>
+    </div>
+  </section>
+</main>
+
+<footer>Campus Energy Digital Twin · Capstone Project<br>
+Prototype using simulated campus data</footer>
+
+<script>
+let allTasks = [];
+let visibleTasks = [];
+
+function emissionLevel(task) {
+  const value = Number(task.estimated_emissions_kg) || 0;
+  if (value > 15) return "high";
+  if (value > 10) return "medium";
+  return "low";
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 2
+  });
+}
+
+async function loadSchedule() {
+  const tbody = document.getElementById("scheduleRows");
+  document.getElementById("resultCount").textContent = "Loading...";
+
+  try {
+    const response = await fetch("/api/dashboard");
+    if (!response.ok) throw new Error("Unable to fetch schedule");
+
+    const data = await response.json();
+    allTasks = Array.isArray(data.schedule) ? data.schedule : [];
+
+    const energy = allTasks.reduce(
+      (sum, item) => sum + (Number(item.energy_kwh) || 0), 0
+    );
+    const emissions = allTasks.reduce(
+      (sum, item) => sum + (Number(item.estimated_emissions_kg) || 0), 0
+    );
+
+    document.getElementById("taskCount").textContent = allTasks.length;
+    document.getElementById("energyTotal").textContent =
+      formatNumber(energy) + " kWh";
+    document.getElementById("emissionTotal").textContent =
+      formatNumber(emissions) + " kg";
+    document.getElementById("highCount").textContent =
+      allTasks.filter(item => emissionLevel(item) === "high").length;
+
+    applyFilters();
+  } catch (error) {
+    console.error(error);
+    tbody.innerHTML =
+      '<tr><td colspan="5" class="empty">Unable to load schedule. Check that Flask is running.</td></tr>';
+    document.getElementById("resultCount").textContent = "Loading failed";
+  }
+}
+
+function applyFilters() {
+  const query = document.getElementById("searchTask")
+    .value.trim().toLowerCase();
+  const level = document.getElementById("emissionFilter").value;
+
+  visibleTasks = allTasks.filter(task => {
+    const matchesSearch =
+      String(task.task || "").toLowerCase().includes(query) ||
+      String(task.hour || "").toLowerCase().includes(query);
+
+    const matchesLevel =
+      level === "all" || emissionLevel(task) === level;
+
+    return matchesSearch && matchesLevel;
+  });
+
+  renderRows();
+}
+
+function renderRows() {
+  const tbody = document.getElementById("scheduleRows");
+  tbody.replaceChildren();
+
+  document.getElementById("resultCount").textContent =
+    `Showing ${visibleTasks.length} of ${allTasks.length} activities`;
+
+  const energy = visibleTasks.reduce(
+    (sum, task) => sum + (Number(task.energy_kwh) || 0), 0
+  );
+  const emissions = visibleTasks.reduce(
+    (sum, task) => sum + (Number(task.estimated_emissions_kg) || 0), 0
+  );
+
+  document.getElementById("filteredEnergy").textContent =
+    formatNumber(energy) + " kWh";
+  document.getElementById("filteredEmissions").textContent =
+    formatNumber(emissions) + " kg CO₂e";
+
+  if (!visibleTasks.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.className = "empty";
+    cell.textContent = "No matching activities. Try another search or filter.";
+    row.appendChild(cell);
+    tbody.appendChild(row);
+    return;
+  }
+
+  visibleTasks.forEach(task => {
+    const row = document.createElement("tr");
+
+    const activity = document.createElement("td");
+    const name = document.createElement("div");
+    name.className = "task-name";
+    name.textContent = task.task || "Unnamed activity";
+
+    const sub = document.createElement("div");
+    sub.className = "task-sub";
+    sub.textContent = "Campus energy activity";
+    activity.append(name, sub);
+
+    const time = document.createElement("td");
+    const timePill = document.createElement("span");
+    timePill.className = "time-pill";
+    timePill.textContent = task.hour || "—";
+    time.appendChild(timePill);
+
+    const energyCell = document.createElement("td");
+    energyCell.className = "energy-value";
+    energyCell.textContent = formatNumber(task.energy_kwh) + " kWh";
+
+    const carbon = document.createElement("td");
+    carbon.textContent = formatNumber(task.carbon_intensity);
+
+    const emissionCell = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = "emission " + emissionLevel(task);
+    badge.textContent =
+      formatNumber(task.estimated_emissions_kg) + " kg CO₂e";
+    emissionCell.appendChild(badge);
+
+    row.append(activity, time, energyCell, carbon, emissionCell);
+    tbody.appendChild(row);
+  });
+}
+
+document.getElementById("searchTask").addEventListener("input", applyFilters);
+document.getElementById("emissionFilter").addEventListener("change", applyFilters);
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+  document.getElementById("searchTask").value = "";
+  document.getElementById("emissionFilter").value = "all";
+  applyFilters();
+});
+
+document.getElementById("refreshBtn").addEventListener("click", loadSchedule);
+
+document.getElementById("exportCsv").addEventListener("click", () => {
+  const headers = [
+    "Task", "Time", "Energy kWh",
+    "Carbon Intensity", "Estimated Emissions kg CO2e"
+  ];
+  const rows = visibleTasks.map(task => [
+    task.task, task.hour, task.energy_kwh,
+    task.carbon_intensity, task.estimated_emissions_kg
+  ]);
+
+  const quote = value =>
+    '"' + String(value ?? "").replace(/"/g, '""') + '"';
+
+  const csv = [headers, ...rows]
+    .map(row => row.map(quote).join(",")).join("\r\n");
+
+  const blob = new Blob(["\uFEFF" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "campus-energy-schedule.csv";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+loadSchedule();
+</script>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

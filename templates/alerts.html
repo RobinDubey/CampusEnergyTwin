@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Alerts Center</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .page-content { max-width: 1100px; margin: 30px auto; padding: 20px; }
+        .alert-card { background: white; border: 1px solid #fecaca; border-left: 5px solid #ef4444; border-radius: 12px; padding: 20px; margin: 16px 0; box-shadow: 0 5px 20px #1e3a8a0c; }
+        .severity { display: inline-block; background: #fee2e2; color: #991b1b; padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .alert-card h2 { color: #172554; }
+        
+.hero {
+    background: linear-gradient(120deg, #172554, #3154b8, #6d4edb);
+    color: white;
+    padding: 26px 3.3% 20px;
+    min-height: 170px;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero .eyebrow {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #aebbe8;
+    margin-bottom: 28px;
+}
+
+.hero h1 {
+    color: white;
+    font-size: 44px;
+    font-weight: 800;
+    margin: 0 0 24px;
+}
+
+.hero h1 span {
+    color: #ff9f1c;
+}
+
+.hero p {
+    color: white;
+    margin: 0;
+}
+
+.hero .main-nav {
+    position: absolute;
+    right: 6%;
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(110deg, #101d4a 0%, #1d347e 55%, #2b4db8 100%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 20px;
+    padding: 12px;
+    z-index: 1000;
+}
+
+.hero .main-nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 14px 20px;
+    border-radius: 12px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.hero .main-nav a:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.hero .main-nav a.active {
+    background: #4668ee;
+    color: white;
+}
+
+@media (max-width: 900px) {
+    .hero .main-nav {
+        position: relative;
+        right: auto;
+        bottom: auto;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+}
+
+/* Alert summary cards */
+.alert-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    margin: 25px 0;
+}
+
+.summary-card {
+    background: white;
+    padding: 22px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 5px 18px #1e3a8a0c;
+}
+
+.summary-card p {
+    color: #64748b;
+    margin: 0 0 10px;
+    font-size: 14px;
+}
+
+.summary-card h2 {
+    color: #172554;
+    font-size: 30px;
+    margin: 0;
+}
+
+.alert-tools {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 24px 0;
+}
+
+.alert-tools select,
+.alert-tools button,
+.resolve-btn {
+    padding: 10px 15px;
+    border-radius: 9px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.alert-tools button,
+.resolve-btn {
+    background: #3154b8;
+    color: white;
+    border: none;
+}
+
+.alert-card.resolved {
+    border-left-color: #10b981;
+    opacity: 0.75;
+}
+
+.severity.medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.severity.resolved-badge {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.alert-card .alert-meta {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.alert-card .resolve-btn {
+    margin-top: 8px;
+}
+
+@media (max-width: 600px) {
+    .page-content {
+        padding: 14px;
+    }
+
+    .hero h1 {
+        font-size: 32px;
+    }
+}
+    </style>
+</head>
+<body>
+    
+<header class="hero">
+    <div class="hero-content">
+        <div class="eyebrow">SMART CAMPUS MANAGEMENT / OPERATIONS</div>
+        <h1>Alerts Center <span>🔔</span></h1>
+        <p>Monitor energy alerts, anomalies and important campus notifications.</p>
+    </div>
+
+    <nav class="main-nav">
+        <a href="/">Dashboard</a>
+        <a href="/buildings">Buildings</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/schedule">Energy Schedule</a>
+        <a href="/alerts" class="active">Alerts Center</a>
+    </nav>
+</header>
+    <main class="page-content">
+        <h1>🔔 Anomaly Alerts Center</h1>
+        <p>Review unusual energy readings reported by the campus system.</p>
+        <p id="alertStatus">Checking alerts...</p>
+        
+<div class="alert-summary">
+    <div class="summary-card">
+        <p>Total Alerts</p>
+        <h2 id="totalAlerts">0</h2>
+    </div>
+
+    <div class="summary-card">
+        <p>High Priority</p>
+        <h2 id="highAlerts">0</h2>
+    </div>
+
+    <div class="summary-card">
+        <p>Resolved Alerts</p>
+        <h2 id="resolvedAlerts">0</h2>
+    </div>
+</div>
+
+<div class="alert-tools">
+    <select id="alertFilter" aria-label="Filter alerts">
+        <option value="all">All Alerts</option>
+        <option value="high">High Priority</option>
+        <option value="resolved">Resolved</option>
+        <option value="active">Active</option>
+    </select>
+
+    <button type="button" id="refreshAlerts">Refresh Alerts</button>
+</div>
+        <section id="alertList"></section>
+    </main>
+
+ <script>
+let resolvedAlertKeys = new Set();
+let currentAnomalies = [];
+
+function getAlertKey(item) {
+    return `${item.building || "Unknown"}-${item.hour ?? "-"}-${item.message || ""}`;
+}
+
+function renderAlerts() {
+    const list = document.getElementById("alertList");
+    const filter = document.getElementById("alertFilter").value;
+
+    list.replaceChildren();
+
+    const visibleAlerts = currentAnomalies.filter(item => {
+        const resolved = resolvedAlertKeys.has(getAlertKey(item));
+        const high = String(item.severity || "").toLowerCase() === "high";
+
+        if (filter === "resolved") return resolved;
+        if (filter === "active") return !resolved;
+        if (filter === "high") return high && !resolved;
+        return true;
+    });
+
+    visibleAlerts.forEach(item => {
+        const key = getAlertKey(item);
+        const resolved = resolvedAlertKeys.has(key);
+
+        const card = document.createElement("article");
+        card.className = "alert-card" + (resolved ? " resolved" : "");
+
+        const badge = document.createElement("span");
+        badge.className = "severity" + (resolved ? " resolved-badge" : "");
+        badge.textContent = resolved ? "RESOLVED" : "WARNING";
+
+        const heading = document.createElement("h2");
+        heading.textContent = item.building || "Unknown building";
+
+        const message = document.createElement("p");
+        message.textContent = item.message || "Unusual reading detected.";
+
+        const details = document.createElement("p");
+        details.className = "alert-meta";
+        details.textContent =
+            `Hour: ${item.hour ?? "-"} | Usage: ${item.usage ?? "-"} | Average: ${item.average ?? "-"}`;
+
+        card.append(badge, heading, message, details);
+
+        if (!resolved) {
+            const button = document.createElement("button");
+            button.className = "resolve-btn";
+            button.textContent = "Mark as Resolved";
+
+            button.addEventListener("click", () => {
+                resolvedAlertKeys.add(key);
+                renderAlerts();
+                updateSummary();
+            });
+
+            card.appendChild(button);
+        }
+
+        list.appendChild(card);
+    });
+
+    if (visibleAlerts.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No alerts match this filter.";
+        list.appendChild(empty);
+    }
+}
+
+function updateSummary() {
+    document.getElementById("totalAlerts").textContent =
+        currentAnomalies.length;
+
+    document.getElementById("highAlerts").textContent =
+        currentAnomalies.filter(item =>
+            !resolvedAlertKeys.has(getAlertKey(item)) &&
+            String(item.severity || "").toLowerCase() === "high"
+        ).length;
+
+    document.getElementById("resolvedAlerts").textContent =
+        currentAnomalies.filter(item =>
+            resolvedAlertKeys.has(getAlertKey(item))
+        ).length;
+}
+
+async function loadAlerts() {
+    const status = document.getElementById("alertStatus");
+    status.textContent = "Checking alerts...";
+
+    try {
+        const response = await fetch("/api/dashboard");
+        if (!response.ok) throw new Error("API request failed");
+
+        const data = await response.json();
+
+currentAnomalies = data.anomalies || [];
+
+// Extra sample alerts for demonstration
+const sampleAlerts = [
+    {
+        building: "Library Building",
+        hour: 10,
+        usage: 95,
+        average: 50,
+        severity: "high",
+        message: "High energy consumption detected."
+    },
+    {
+        building: "Computer Lab",
+        hour: 14,
+        usage: 80,
+        average: 45,
+        severity: "high",
+        message: "Unusual electricity usage detected."
+    },
+    {
+        building: "Admin Building",
+        hour: 12,
+        usage: 70,
+        average: 40,
+        severity: "medium",
+        message: "Energy consumption is above the usual average."
+    },
+    
+    {
+        building: "Science Laboratory",
+        hour: 16,
+        usage: 88,
+        average: 42,
+        severity: "high",
+        message: "Possible energy wastage detected."
+    }
+];
+
+// Add demo alerts only when their building is not already present
+sampleAlerts.forEach(sample => {
+    const exists = currentAnomalies.some(
+        item => item.building === sample.building
+    );
+
+    if (!exists) {
+        currentAnomalies.push(sample);
+    }
+});
+        updateSummary();
+        renderAlerts();
+
+        status.textContent =
+            `${currentAnomalies.length} alert(s) reported.`;
+    } catch (error) {
+        status.textContent = "Unable to load alerts. Please refresh.";
+        console.error(error);
+    }
+}
+
+document.getElementById("alertFilter").addEventListener("change", renderAlerts);
+document.getElementById("refreshAlerts").addEventListener("click", loadAlerts);
+
+loadAlerts();
+</script>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

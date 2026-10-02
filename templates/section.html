@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Energy | {{ page|title }}</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="inner-page">
+
+<header class="page-header">
+    <div>
+        <p class="eyebrow">SMART CAMPUS MANAGEMENT</p>
+        <h1>
+            {% if page == 'buildings' %}Building Intelligence
+            {% elif page == 'analytics' %}Energy Analytics
+            {% else %}Alerts Center{% endif %}
+        </h1>
+        <p class="subtitle">
+            {% if page == 'buildings' %}
+                Monitor every building's energy performance.
+            {% elif page == 'analytics' %}
+                Explore campus energy trends and carbon emissions.
+            {% else %}
+                Identify unusual readings and monitor energy risks.
+            {% endif %}
+        </p>
+    </div>
+    <a class="back-button" href="/">← Dashboard</a>
+</header>
+
+<nav class="main-nav section-nav">
+    <a href="/">Dashboard</a>
+    <a href="/buildings">Buildings</a>
+    <a href="/analytics">Analytics</a>
+    <a href="/schedule">Energy Schedule</a>
+    <a href="/alerts">Alerts Center</a>
+</nav>
+
+<main class="section-container">
+    <div class="section-toolbar">
+        <div>
+            <span class="live-dot"></span>
+            <span id="pageStatus">Connecting to campus data...</span>
+        </div>
+        <button class="action-button" onclick="loadSection()">
+            ↻ Refresh
+        </button>
+    </div>
+
+    {% if page == 'buildings' %}
+    <section class="metric-grid">
+        <article class="metric-card">
+            <span>Total Buildings</span>
+            <h2 id="buildingCount">—</h2>
+            <small>Campus infrastructure</small>
+        </article>
+        <article class="metric-card green-card">
+            <span>Total Energy Usage</span>
+            <h2 id="buildingEnergy">—</h2>
+            <small>Combined building consumption</small>
+        </article>
+        <article class="metric-card orange-card">
+            <span>Highest Consumption</span>
+            <h2 id="highestBuilding">—</h2>
+            <small id="highestValue">Energy usage leader</small>
+        </article>
+    </section>
+
+    <section class="content-panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Building Performance</h2>
+                <p>Search and compare campus buildings.</p>
+            </div>
+            <input id="buildingSearch" class="search-input"
+                   placeholder="🔍 Search building..."
+                   oninput="filterBuildings()">
+        </div>
+        <div id="buildingCards" class="building-grid">
+            <p>Loading building data...</p>
+        </div>
+    </section>
+
+    {% elif page == 'analytics' %}
+    <section class="metric-grid">
+        <article class="metric-card">
+            <span>Total Energy</span>
+            <h2 id="analyticsEnergy">—</h2>
+            <small>Campus consumption</small>
+        </article>
+        <article class="metric-card green-card">
+            <span>Carbon Emissions</span>
+            <h2 id="analyticsCarbon">—</h2>
+            <small>Estimated kg CO₂e</small>
+        </article>
+        <article class="metric-card orange-card">
+            <span>Active Anomalies</span>
+            <h2 id="analyticsAnomalies">—</h2>
+            <small>Flagged readings</small>
+        </article>
+    </section>
+
+    <section class="charts-grid section-charts">
+        <article class="content-panel">
+            <h2>Building Energy Comparison</h2>
+            <p>Consumption across campus buildings.</p>
+            <div class="chart-container">
+                <canvas id="sectionEnergyChart"></canvas>
+            </div>
+        </article>
+        <article class="content-panel">
+            <h2>Hourly Carbon Intensity</h2>
+            <p>Carbon intensity throughout the day.</p>
+            <div class="chart-container">
+                <canvas id="sectionCarbonChart"></canvas>
+            </div>
+        </article>
+    </section>
+
+    {% else %}
+    <section class="metric-grid">
+        <article class="metric-card orange-card">
+            <span>Total Alerts</span>
+            <h2 id="alertCount">—</h2>
+            <small>Flagged energy readings</small>
+        </article>
+        <article class="metric-card">
+            <span>Buildings Affected</span>
+            <h2 id="affectedCount">—</h2>
+            <small>Unique building names</small>
+        </article>
+        <article class="metric-card green-card">
+            <span>Monitoring</span>
+            <h2>ACTIVE</h2>
+            <small>Dashboard data connection</small>
+        </article>
+    </section>
+
+    <section class="content-panel">
+        <div class="panel-heading">
+            <div>
+                <h2>Energy Anomaly Reports</h2>
+                <p>Review unusual consumption readings.</p>
+            </div>
+            <div class="filter-group">
+                <input id="alertSearch" class="search-input"
+                       placeholder="🔍 Search building..."
+                       oninput="filterAlerts()">
+                <button class="action-button"
+                        onclick="exportAlerts()">↓ Export CSV</button>
+            </div>
+        </div>
+        <div id="alertCards" class="alert-list">
+            <p>Loading alerts...</p>
+        </div>
+    </section>
+    {% endif %}
+
+    <footer class="section-footer">
+        Campus Energy Digital Twin · Capstone Project
+        <p>Prototype using simulated campus data</p>
+    </footer>
+</main>
+
+<script>
+const currentPage = {{ page|tojson }};
+let sectionData = {};
+let energyChart = null;
+let carbonChart = null;
+
+async function loadSection() {
+    const status = document.getElementById("pageStatus");
+    status.textContent = "Refreshing campus data...";
+
+    try {
+        const response = await fetch("/api/dashboard");
+        if (!response.ok) throw new Error("API request failed");
+
+        sectionData = await response.json();
+
+        if (currentPage === "buildings") renderBuildings();
+        if (currentPage === "analytics") renderAnalytics();
+        if (currentPage === "alerts") renderAlerts();
+
+        status.textContent = "Campus data loaded successfully";
+    } catch (error) {
+        console.error(error);
+        status.textContent = "Unable to load data. Try refreshing.";
+    }
+}
+
+function renderBuildings() {
+    const buildings = sectionData.building_totals || {};
+    const entries = Object.entries(buildings)
+        .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+    document.getElementById("buildingCount").textContent = entries.length;
+
+    const total = entries.reduce((sum, item) => sum + Number(item[1]), 0);
+    document.getElementById("buildingEnergy").textContent =
+        total.toLocaleString() + " kWh";
+
+    document.getElementById("highestBuilding").textContent =
+        entries.length ? entries[0][0] : "—";
+    document.getElementById("highestValue").textContent =
+        entries.length ? Number(entries[0][1]).toLocaleString() + " kWh" :
+        "No data available";
+
+    const container = document.getElementById("buildingCards");
+    container.innerHTML = "";
+
+    if (!entries.length) {
+        container.textContent = "No building data available.";
+        return;
+    }
+
+    entries.forEach(([name, energy], index) => {
+        const value = Number(energy) || 0;
+        const percentage = total ? value / total * 100 : 0;
+
+        const card = document.createElement("article");
+        card.className = "building-card";
+        card.dataset.name = name.toLowerCase();
+
+        const title = document.createElement("h3");
+        title.textContent = name;
+
+        const usage = document.createElement("strong");
+        usage.className = "building-usage";
+        usage.textContent = value.toLocaleString() + " kWh";
+
+        const label = document.createElement("p");
+        label.className = "muted";
+        label.textContent = percentage.toFixed(1) + "% of campus energy";
+
+        const track = document.createElement("div");
+        track.className = "progress-track";
+
+        const bar = document.createElement("div");
+        bar.className = "progress-fill";
+        bar.style.width = percentage + "%";
+        track.appendChild(bar);
+
+        const badge = document.createElement("span");
+        badge.className = "status-badge " +
+            (index === 0 ? "status-high" : "status-normal");
+        badge.textContent = index === 0 ? "Highest usage" : "Monitored";
+
+        card.append(title, usage, label, track, badge);
+        container.appendChild(card);
+    });
+
+    filterBuildings();
+}
+
+function filterBuildings() {
+    const query = document.getElementById("buildingSearch").value
+        .trim().toLowerCase();
+
+    document.querySelectorAll("#buildingCards .building-card")
+        .forEach(card => {
+            card.hidden = !card.dataset.name.includes(query);
+        });
+}
+
+function renderAnalytics() {
+    const buildings = sectionData.building_totals || {};
+    const entries = Object.entries(buildings);
+    const carbon = sectionData.carbon_intensity || [];
+    const anomalies = sectionData.anomalies || [];
+
+    const total = entries.reduce((sum, item) => sum + Number(item[1]), 0);
+    const emissions = Number(
+        sectionData.estimated_emissions_kg ??
+        sectionData.total_emissions_kg ?? 0
+    );
+
+    document.getElementById("analyticsEnergy").textContent =
+        total.toLocaleString() + " kWh";
+    document.getElementById("analyticsCarbon").textContent =
+        emissions.toLocaleString() + " kg";
+    document.getElementById("analyticsAnomalies").textContent =
+        sectionData.anomaly_count ?? anomalies.length;
+
+    if (energyChart) energyChart.destroy();
+    if (carbonChart) carbonChart.destroy();
+
+    energyChart = new Chart(document.getElementById("sectionEnergyChart"), {
+        type: "bar",
+        data: {
+            labels: entries.map(item => item[0]),
+            datasets: [{
+                label: "Energy (kWh)",
+                data: entries.map(item => Number(item[1])),
+                backgroundColor: ["#4263eb", "#12a889", "#f59e0b", "#8b5cf6"],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    carbonChart = new Chart(document.getElementById("sectionCarbonChart"), {
+        type: "line",
+        data: {
+            labels: carbon.map((_, i) => `${String(i).padStart(2, "0")}:00`),
+            datasets: [{
+                label: "Carbon intensity",
+                data: carbon.map(Number),
+                borderColor: "#12a889",
+                backgroundColor: "rgba(18,168,137,0.12)",
+                fill: true,
+                tension: 0.35
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+function renderAlerts() {
+    const alerts = sectionData.anomalies || [];
+    const names = new Set(alerts.map(item => item.building).filter(Boolean));
+
+    document.getElementById("alertCount").textContent =
+        sectionData.anomaly_count ?? alerts.length;
+    document.getElementById("affectedCount").textContent = names.size;
+
+    const container = document.getElementById("alertCards");
+    container.innerHTML = "";
+
+    if (!alerts.length) {
+        container.textContent = "No anomaly alerts reported.";
+        return;
+    }
+
+    alerts.forEach(item => {
+        const card = document.createElement("article");
+        card.className = "alert-card";
+        card.dataset.name = String(item.building || "").toLowerCase();
+
+        const top = document.createElement("div");
+        top.className = "alert-card-top";
+
+        const title = document.createElement("h3");
+        title.textContent = "⚠ " + (item.building || "Unknown building");
+
+        const badge = document.createElement("span");
+        badge.className = "status-badge status-high";
+        badge.textContent = "Review required";
+
+        top.append(title, badge);
+
+        const message = document.createElement("p");
+        message.textContent = item.message || "Unusual energy reading detected.";
+
+        const details = document.createElement("div");
+        details.className = "alert-details";
+        details.textContent =
+            `Hour: ${item.hour ?? "—"} · Usage: ${item.usage ?? "—"} kWh · Average: ${item.average ?? "—"} kWh`;
+
+        card.append(top, message, details);
+        container.appendChild(card);
+    });
+
+    filterAlerts();
+}
+
+function filterAlerts() {
+    const query = document.getElementById("alertSearch").value
+        .trim().toLowerCase();
+
+    document.querySelectorAll("#alertCards .alert-card")
+        .forEach(card => {
+            card.hidden = !card.dataset.name.includes(query);
+        });
+}
+
+function exportAlerts() {
+    const rows = [...document.querySelectorAll("#alertCards .alert-card")]
+        .filter(card => !card.hidden)
+        .map(card => [
+            card.querySelector("h3").textContent.replace("⚠ ", ""),
+            card.querySelector("p").textContent,
+            card.querySelector(".alert-details").textContent
+        ]);
+
+    const quote = value => '"' + String(value).replace(/"/g, '""') + '"';
+    const csv = [
+        ["Building", "Alert", "Details"],
+        ...rows
+    ].map(row => row.map(quote).join(",")).join("\r\n");
+
+    const url = URL.createObjectURL(
+        new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "campus-energy-alerts.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+}
+
+document.addEventListener("DOMContentLoaded", loadSection);
+</script>
+
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,173 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Campus Energy Digital Twin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    
+<header class="topbar">
+    <div class="header-brand">
+        <p class="eyebrow">SMART CAMPUS MANAGEMENT</p>
+        <h1>Campus Energy Digital Twin</h1>
+        <p class="subtitle">
+            Energy monitoring, anomaly detection and carbon-aware scheduling
+        </p>
+    </div>
+
+    <nav class="main-nav">
+        <a href="/" class="active">Dashboard</a>
+        <a href="/buildings">Buildings</a>
+        <a href="/analytics">Analytics</a>
+        <a href="/schedule">Energy Schedule</a>
+        <a href="/alerts">Alerts Center</a>
+    </nav>
+
+    <div class="header-actions">
+        <button id="refreshBtn" class="refresh-btn">
+            ↻ Refresh Data
+        </button>
+    </div>
+</header>
+    <main class="container">
+        <div class="status-row">
+            <span class="live-dot"></span>
+            Campus Monitoring Dashboard
+            <span id="dataStatus" class="updated">
+                Loading campus data...
+            </span>
+        </div>
+        
+<!-- Advanced Dashboard Controls -->
+<section class="feature-toolbar">
+    <div class="filter-control">
+        <label for="buildingFilter">Filter Building</label>
+        <select id="buildingFilter">
+            <option value="all">All Buildings</option>
+        </select>
+    </div>
+
+    <div class="filter-control">
+        <label for="scheduleSearch">Search Schedule</label>
+        <input
+            type="search"
+            id="scheduleSearch"
+            placeholder="Search EV, pumping..."
+        >
+    </div>
+
+    <button type="button" id="darkModeBtn" class="feature-btn">
+        🌙 Dark Mode
+    </button>
+
+    <button type="button" id="exportCsvBtn" class="feature-btn">
+        ⬇ Export CSV
+    </button>
+</section>
+
+<p id="featureStatus" class="feature-status" aria-live="polite"></p>
+
+        <section class="stats-grid">
+            <article class="stat-card blue">
+                <p>Total Energy Consumption</p>
+                <h2 id="totalEnergy">--</h2>
+                <span>Campus energy usage</span>
+            </article>
+
+            <article class="stat-card green">
+                <p>Estimated Carbon Emissions</p>
+                <h2 id="totalEmissions">--</h2>
+                <span>Estimated kg CO₂e</span>
+            </article>
+
+            <article class="stat-card orange">
+                <p>Anomaly Alerts</p>
+                <h2 id="anomalyCount">--</h2>
+                <span>Unusual energy readings</span>
+            </article>
+        </section>
+
+        <section class="charts-grid">
+            <article class="panel">
+                <h3>Building Energy Consumption</h3>
+                <p class="muted">Energy usage by campus building</p>
+                <div class="chart-container">
+                    <canvas id="energyChart"></canvas>
+                </div>
+            </article>
+
+            <article class="panel">
+                <h3>Grid Carbon Intensity</h3>
+                <p class="muted">Hourly carbon intensity profile</p>
+                <div class="chart-container">
+                    <canvas id="carbonChart"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <section class="panel">
+            <h3>Campus Digital Twin</h3>
+            <p class="muted">
+                Virtual overview of energy consumption by building
+            </p>
+            <div id="buildingTwin" class="building-grid">
+                   Loading buildings...
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>⚠ Anomaly Detection Alerts</h3>
+            <p class="muted">
+                Readings flagged for unusual energy consumption
+            </p>
+            <div id="anomalyList">
+                Loading alerts...
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3>Carbon-Aware Energy Schedule</h3>
+            <p class="muted">
+                Example tasks and their estimated carbon emissions
+            </p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Scheduled Time</th>
+                            <th>Energy (kWh)</th>
+                            <th>Carbon Intensity</th>
+                            <th>Emissions (kg CO₂e)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleBody">
+                        <tr>
+                            <td colspan="5">Loading schedule...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            Campus Energy Digital Twin · Capstone Project
+            <p>Prototype using simulated campus data</p>
+        </footer>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>
